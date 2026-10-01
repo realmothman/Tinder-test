@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.env
+
+# Project outputs (regeneratable)
+*_report.json
+*_insights.json
+*_results.json
+opening_insights.json
+adaptive_insights_final.json
+integrated_bot_report.json
+
+# Temporary directories
+tinder_research/analysis/
+tinder_research/data/
+tinder_research/experiments/
+tinder_research/visualization/
