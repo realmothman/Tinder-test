@@ -18,6 +18,54 @@ from datetime import datetime
 import logging
 
 from tinder_automation import TinderAutomation, TinderMatch, TinderMessage
+
+
+class RateLimiter:
+    """
+    Structured rate limiting to respect API/service limits (best practice).
+    Prevents ban by respecting message rate limits.
+    """
+
+    def __init__(self, actions_per_hour: int = 20, name: str = "RateLimiter"):
+        """
+        Args:
+            actions_per_hour: Max actions allowed per 60 minutes
+            name: For logging
+        """
+        self.max_actions = actions_per_hour
+        self.window_seconds = 3600  # 1 hour
+        self.action_times = []
+        self.name = name
+        self.logger = logging.getLogger(name)
+
+    def can_act(self) -> bool:
+        """Check if we can perform action without exceeding rate limit."""
+        now = time.time()
+        # Remove old actions outside window
+        self.action_times = [t for t in self.action_times if now - t < self.window_seconds]
+        return len(self.action_times) < self.max_actions
+
+    def wait_if_needed(self) -> float:
+        """Wait if rate limited. Returns time waited."""
+        now = time.time()
+        self.action_times = [t for t in self.action_times if now - t < self.window_seconds]
+
+        if len(self.action_times) >= self.max_actions:
+            oldest = self.action_times[0]
+            sleep_time = self.window_seconds - (now - oldest)
+            self.logger.info(
+                f"⏰ Rate limit reached ({self.max_actions}/{self.window_seconds}s). "
+                f"Waiting {sleep_time:.1f}s..."
+            )
+            time.sleep(sleep_time)
+            return sleep_time
+        return 0.0
+
+    def record_action(self):
+        """Record that action was performed."""
+        self.action_times.append(time.time())
+        remaining = self.max_actions - len(self.action_times)
+        self.logger.debug(f"Action recorded. {remaining} remaining this hour.")
 from tinder_bot_example import (
     Profile, Message, Conversation,
     HomophilyAnalyzer, GenderAnalyzer, CapitalAnalyzer,

@@ -121,6 +121,23 @@ class TinderAutomation:
         delay = random.uniform(min_sec, max_sec)
         time.sleep(delay)
 
+    def _retry_with_backoff(self, func, max_attempts: int = 3, base_wait: float = 2.0):
+        """Execute function with exponential backoff on failure (best practice from similar projects)"""
+        for attempt in range(max_attempts):
+            try:
+                return func()
+            except Exception as e:
+                if attempt < max_attempts - 1:
+                    wait_time = base_wait ** attempt
+                    self.logger.warning(
+                        f"⚠️  Attempt {attempt + 1} failed: {str(e)[:50]}... "
+                        f"Retrying in {wait_time:.1f}s"
+                    )
+                    time.sleep(wait_time)
+                else:
+                    self.logger.error(f"✗ All {max_attempts} attempts failed")
+                    raise
+
     def login(self, email: str, password: str, wait_for_2fa: bool = True) -> bool:
         """
         Faz login no Tinder

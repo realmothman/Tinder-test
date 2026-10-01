@@ -26,6 +26,22 @@ class Profile:
     education_level: str  # 'high_school', 'bachelor', 'master', 'phd'
     location: str
 
+    def anonymize(self) -> Dict:
+        """
+        GDPR-compliant anonymization (best practice from similar projects).
+        Remove PII, keep only analytical data for research.
+        """
+        return {
+            'age_decade': f"{(self.age // 10) * 10}s",
+            'gender': self.gender,
+            'has_advanced_degree': self.education_level in ['master', 'phd'],
+            'education_level': self.education_level,
+            'is_urban': len(self.location) > 0,
+            'location_region': self.location.split(',')[-1].strip() if ',' in self.location else 'Unknown',
+            'has_bio': len(self.bio) > 0,
+            'bio_length_category': 'short' if len(self.bio) < 50 else ('medium' if len(self.bio) < 150 else 'long')
+        }
+
 
 @dataclass
 class Message:
