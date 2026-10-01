@@ -1,0 +1,187 @@
+# Configuration Template for Dating App Conversation Research
+# Copy this to config.yaml and modify as needed
+
+# Project Paths
+project_root: "."
+data_dir: "data"
+output_dir: "outputs"
+logs_dir: "logs"
+
+# ========== ETHICS & VALIDATION ==========
+
+# CRITICAL: Enforce synthetic-only mode
+enforce_synthetic_only: true  # Set to false only if you know what you're doing
+
+# Require ethics approval documentation
+require_ethics_approval: true
+
+# ========== LLM CONFIGURATION ==========
+
+# Which LLM provider to use: "openai", "anthropic", or "mock"
+llm_provider: "mock"  # Start with mock for testing
+
+# OpenAI Configuration (if llm_provider: openai)
+openai_api_key: null  # Set via OPENAI_API_KEY env var
+openai_model: "gpt-4"  # "gpt-4", "gpt-4-turbo", etc
+# openai_api_key: "sk-..."  # Or hardcode (not recommended)
+
+# Anthropic Configuration (if llm_provider: anthropic)
+anthropic_api_key: null  # Set via ANTHROPIC_API_KEY env var
+anthropic_model: "claude-3-sonnet-20240229"
+
+# LLM Parameters
+temperature: 0.7  # 0.0 = deterministic, 1.0 = creative
+max_tokens: 150   # Maximum response length
+
+# ========== SYNTHETIC USER GENERATION ==========
+
+# Number of synthetic users to generate
+num_users: 100  # Start small, scale up
+
+# Demographic distributions (must sum to 1.0)
+demographics:
+  # Gender distribution
+  gender_split:
+    M: 0.5
+    F: 0.5
+    NB: 0.0
+
+  # Age distribution (normal)
+  age_mean: 28
+  age_std: 5
+  age_min: 22
+  age_max: 50
+
+  # Race/ethnicity distribution (US Census approximation)
+  race_distribution:
+    white: 0.65
+    black: 0.13
+    hispanic: 0.19
+    asian: 0.06
+    other: 0.04  # Note: Sum must equal 1.0
+
+  # Education distribution
+  education_distribution:
+    high_school: 0.20
+    bachelor: 0.45
+    master: 0.25
+    phd: 0.10
+
+# ========== MATCHING & CONVERSATION SIMULATION ==========
+
+# Number of conversations to simulate
+num_conversations: 500  # Increase for more data
+
+# Maximum turns (messages) per conversation
+max_turns_per_conversation: 25
+
+# Homophily strength: how much users prefer similar demographics
+# 0.0 = no homophily (random matching)
+# 0.5 = moderate homophily
+# 1.0 = strong homophily (only match within group)
+homophily_strength: 0.6
+
+# Conversation strategies to test
+# Options: "casual", "direct", "romantic", "playful", "formal"
+strategies:
+  - casual
+  - direct
+  - romantic
+  - playful
+  - formal
+
+# ========== ANALYSIS SETTINGS ==========
+
+# Dimensions to disaggregate results by
+disaggregate_by:
+  - gender
+  - race
+  - age_group
+  - education
+
+# Fairness metrics to compute
+# Options: demographic_parity, equalized_odds, calibration
+fairness_metrics:
+  - demographic_parity
+  - equalized_odds
+  - calibration
+
+# ========== OUTPUT GENERATION ==========
+
+# Generate figures
+generate_figures: true
+
+# Generate summary tables
+generate_tables: true
+
+# Figure output format: "pdf", "png", "svg"
+figure_format: "pdf"
+
+# Figure resolution (DPI)
+figure_dpi: 300
+
+# ========== REPRODUCIBILITY ==========
+
+# Random seed (for reproducibility)
+# Same seed = same results
+# Different seed = different but consistent results
+random_seed: 42
+
+# Verbosity level
+# 0 = errors only
+# 1 = info (default)
+# 2 = debug
+verbose: 1
+
+# ========== EXPERIMENT METADATA ==========
+
+# Experiment name (for logs)
+experiment_name: "homophily_and_gender"
+
+# Experiment description
+experiment_description: "Analysis of homophily patterns and gender dynamics in synthetic dating conversations"
+
+# Tags for organizing experiments
+tags:
+  - homophily
+  - gender-dynamics
+  - synthetic-data
+  - reproducible
+
+# ========== ADVANCED OPTIONS ==========
+
+# Test mode: Use only 10 users and 50 conversations for quick testing
+test_mode: false
+
+# Save all conversation transcripts (can be large)
+save_transcripts: true
+
+# Save user profiles
+save_user_profiles: true
+
+# Compute additional metrics
+compute_linguistic_analysis: true
+compute_erotic_capital: true
+compute_power_dynamics: true
+
+# ========== DOCUMENTATION ==========
+
+# Instructions:
+# 1. Copy this file to config.yaml
+# 2. Modify parameters as needed
+# 3. For real LLM: Set llm_provider and API key
+# 4. For testing: Use llm_provider: "mock"
+# 5. Run: python -m tinder_research.experiments.example_experiment --config config.yaml
+
+# Notes:
+# - Start with test_mode: true for quick testing
+# - Use llm_provider: "mock" until you're ready for real LLMs
+# - Always verify ETHICS_FRAMEWORK.md before running
+# - Document any changes to this file in git
+# - Output will be in outputs/<experiment_name>_<timestamp>/
+
+# Questions?
+# - See README_RESEARCH_TOOL.md
+# - See METHODOLOGY.md for research design
+# - See ARCHITECTURE.md for technical details
+# - See ETHICS_FRAMEWORK.md for ethical guidelines
