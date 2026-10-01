@@ -1,0 +1,158 @@
+{
+  "session_timestamp": "2026-10-01T03:02:44.581901",
+  "my_profile": {
+    "name": "Alex",
+    "age": 28,
+    "gender": "M",
+    "profession": "Engenheiro de Software",
+    "bio": "Gosto de viajar, ler e bom papo",
+    "education_level": "bachelor",
+    "location": "São Paulo"
+  },
+  "conversations_processed": 2,
+  "adaptive_generator_stats": {
+    "successful_openings": 3,
+    "failed_openings": 0,
+    "success_rate": 1.0,
+    "patterns": {
+      "avg_length": 59.0,
+      "emoji_usage": 1.0,
+      "question_rate": 1.0,
+      "mention_profile": 0.3333333333333333,
+      "common_topics": [],
+      "avg_success_score": 0.5586835313943482,
+      "top_performers": [
+        "Oi Marina! Vi que você curte cinema, qual é seu favorito? 🎬",
+        "Oi Marina! Vi que você curte cinema, qual é seu favorito? 🎬",
+        "Oi Marina! Vi que você curte cinema, qual é seu favorito? 🎬"
+      ]
+    },
+    "common_topics": []
+  },
+  "aggregate_analysis": {
+    "homophily": {
+      "total_conversations": 2,
+      "avg_age_difference": 1.0,
+      "age_range": "1-1",
+      "education_match_rate": 0.0,
+      "profession_match_rate": 0.0,
+      "location_match_rate": 1.0,
+      "gender_distribution": {
+        "F": 2
+      },
+      "homophily_score": 0.3333333333333333,
+      "interpretation": "Seus matches são variados (baixa homophilia)"
+    },
+    "gender_dynamics": {
+      "by_gender": {
+        "F": {
+          "num_conversations": 2,
+          "total_messages": 8,
+          "avg_message_length": 7.875,
+          "user_to_bot_ratio": 1.0,
+          "avg_response_time_seconds": 51.81119087863346
+        }
+      },
+      "interpretation": "Analise padrões de resposta entre gêneros"
+    },
+    "capital": {
+      "capital_distribution": {
+        "cultural": 1.0
+      },
+      "dominant_capital": "cultural",
+      "interpretation": "Que tipo de 'capital' é mais sinalizado nessas conversas?"
+    }
+  },
+  "individual_results": [
+    {
+      "id": "conv_0",
+      "profile": {
+        "name": "Ana",
+        "age": 27,
+        "gender": "F",
+        "profession": "Arquiteta",
+        "bio": "Design, viagens, bom papo",
+        "education_level": "master",
+        "location": "São Paulo"
+      },
+      "persona": "professional",
+      "messages": [
+        {
+          "timestamp": "2026-10-01T03:02:44.580620",
+          "sender": "bot",
+          "content": "Oi Marina! Vi que você curte cinema, qual é seu favorito? 🎬",
+          "word_count": 12
+        },
+        {
+          "timestamp": "2026-10-01T03:02:44.581402",
+          "sender": "user",
+          "content": "Que legal, nunca pensei desse jeito.",
+          "word_count": 6
+        },
+        {
+          "timestamp": "2026-10-01T03:02:44.581419",
+          "sender": "bot",
+          "content": "Que legal! Que legal, nunca pensei desse jeito.",
+          "word_count": 8
+        },
+        {
+          "timestamp": "2026-10-01T03:02:44.581423",
+          "sender": "user",
+          "content": "Ah é? Me conta mais!",
+          "word_count": 5
+        }
+      ],
+      "response_times": [
+        74.2496308136755,
+        62.48060262443174,
+        28.70316347621542
+      ],
+      "total_duration": 165.43339691432266
+    },
+    {
+      "id": "conv_1",
+      "profile": {
+        "name": "Julia",
+        "age": 29,
+        "gender": "F",
+        "profession": "Médica",
+        "bio": "Saúde, academia",
+        "education_level": "master",
+        "location": "São Paulo"
+      },
+      "persona": "professional",
+      "messages": [
+        {
+          "timestamp": "2026-10-01T03:02:44.581744",
+          "sender": "bot",
+          "content": "Oi Marina! Vi que você curte cinema, qual é seu favorito? 🎬",
+          "word_count": 12
+        },
+        {
+          "timestamp": "2026-10-01T03:02:44.581753",
+          "sender": "user",
+          "content": "Que legal, nunca pensei desse jeito.",
+          "word_count": 6
+        },
+        {
+          "timestamp": "2026-10-01T03:02:44.581761",
+          "sender": "bot",
+          "content": "Que legal! Que legal, nunca pensei desse jeito.",
+          "word_count": 8
+        },
+        {
+          "timestamp": "2026-10-01T03:02:44.581765",
+          "sender": "user",
+          "content": "Que legal, nunca pensei desse jeito.",
+          "word_count": 6
+        }
+      ],
+      "response_times": [
+        75.12001267649782,
+        63.959864014386184,
+        6.353871666594078
+      ],
+      "total_duration": 145.4337483574781
+    }
+  ]
+}

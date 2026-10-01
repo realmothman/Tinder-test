@@ -1,0 +1,30 @@
+{
+  "total_successful": 3,
+  "total_failed": 0,
+  "success_rate": 1.0,
+  "patterns": {
+    "avg_length": 59.0,
+    "emoji_usage": 1.0,
+    "question_rate": 1.0,
+    "mention_profile": 0.3333333333333333,
+    "common_topics": [],
+    "avg_success_score": 0.5586835313943482,
+    "top_performers": [
+      "Oi Marina! Vi que você curte cinema, qual é seu favorito? 🎬",
+      "Oi Marina! Vi que você curte cinema, qual é seu favorito? 🎬",
+      "Oi Marina! Vi que você curte cinema, qual é seu favorito? 🎬"
+    ]
+  },
+  "common_topics": [],
+  "profile_success_mapping": {
+    "age:25-30": 0.5586835313943482,
+    "gender:F": 0.5586835313943482,
+    "edu:bachelor": 0.525,
+    "edu:master": 0.5755252970915222
+  },
+  "top_performing_messages": [
+    "Oi Marina! Vi que você curte cinema, qual é seu favorito? 🎬",
+    "Oi Marina! Vi que você curte cinema, qual é seu favorito? 🎬",
+    "Oi Marina! Vi que você curte cinema, qual é seu favorito? 🎬"
+  ]
+}
