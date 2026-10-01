@@ -32,7 +32,7 @@ class Profile:
         Remove PII, keep only analytical data for research.
         """
         return {
-            'age_decade': f"{(self.age // 10) * 10}s",
+            'age_band': f"{(self.age // 5) * 5}-{(self.age // 5) * 5 + 4}",
             'gender': self.gender,
             'has_advanced_degree': self.education_level in ['master', 'phd'],
             'education_level': self.education_level,
@@ -220,7 +220,7 @@ class HomophilyAnalyzer:
                 education_matches += 1
 
             # Profissão (proximidade)
-            if profile.profession.split()[0] == my_profile.profession.split()[0]:
+            if profile.profession.split()[:1] == my_profile.profession.split()[:1]:
                 profession_matches += 1
 
             # Localização
@@ -340,7 +340,7 @@ class CapitalAnalyzer:
             'capital_distribution': {
                 k: v/total for k, v in capital_counts.items()
             },
-            'dominant_capital': max(capital_counts, key=capital_counts.get),
+            'dominant_capital': max(capital_counts, key=capital_counts.get, default=None),
             'interpretation': "Que tipo de 'capital' é mais sinalizado nessas conversas?"
         }
 
@@ -455,12 +455,10 @@ def main():
     print("🎯 INSIGHTS ANTROPOLÓGICOS")
     print("="*70)
 
+    print("   (dados simulados: estes números não descrevem nenhuma pessoa real)")
     insights = [
-        f"1. Você tem preferência clara por pessoas similares (homophily={homophily['homophily_score']:.0%})",
-        f"2. Conversas com mulheres duram em média 2.5 mensagens",
-        f"3. Capital '{capital['dominant_capital']}' é o mais frequente nos matches",
-        f"4. Padrão de abertura: {personas[0].upper()} funciona melhor para você",
-        f"5. Seu mercado de Tinder parece ser de classe média educada em São Paulo"
+        f"1. Score de homofilia nesta amostra: {homophily['homophily_score']:.0%}",
+        f"2. Capital mais frequente nesta amostra: {capital['dominant_capital']}",
     ]
 
     for insight in insights:

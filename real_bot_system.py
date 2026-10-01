@@ -13,6 +13,8 @@ Workflow:
 
 import json
 import time
+import uuid
+from dataclasses import asdict
 from typing import List, Dict, Optional
 from datetime import datetime
 import logging
@@ -120,6 +122,7 @@ class RealBotSystem:
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
+        self.logger.propagate = False
 
         self.my_profile = my_profile
         self.email = email
@@ -127,6 +130,7 @@ class RealBotSystem:
         self.headless = headless
         self.mock_mode = mock_mode
         self.output_file = output_file
+        self.historical_conversations = historical_conversations or []
 
         # Initialize automation
         self.automation = TinderAutomation(
@@ -198,7 +202,7 @@ class RealBotSystem:
 
             # 1. Generate intelligent opening
             opening_msg, metadata = self.adaptive_generator.generate_opening(
-                match_profile
+                asdict(match_profile)
             )
             self.logger.info(f"💬 Opening: {opening_msg}")
             self.logger.info(f"   Confidence: {metadata['confidence']:.0%}")
@@ -218,58 +222,48 @@ class RealBotSystem:
             else:
                 self.logger.info("📤 (Mock) Would send message")
 
-            # 3. Wait for response (in real scenario)
+            # 3. Collect the conversation that actually happened
             if not self.mock_mode:
                 self.logger.info("⏳ Waiting for response (30 seconds)...")
                 time.sleep(30)
-                conversation = self.automation.get_conversation(match.match_id)
+                tinder_messages = self.automation.get_conversation(match.match_id)
             else:
-                # In mock mode, use simulated conversation
-                conversation = self.automation._generate_mock_conversation()
+                tinder_messages = self.automation._generate_mock_conversation()
 
-            # 4. Use IntegratedBotSystem for full analysis
-            result = self.integrated_system.process_new_match(
-                match_profile,
-                persona='auto'
-            )
+            # 4. Analyze the collected conversation, not a simulated one
+            conversation = self._to_conversation(match, match_profile, tinder_messages)
+            self.integrated_system.conversation_history.append(conversation)
+            analysis = self.integrated_system._anthropological_analysis(conversation)
+            success = self.integrated_system._calculate_success(conversation)
+            success_value = {'high': 0.9, 'medium': 0.6, 'low': 0.3}.get(success['success_level'], 0.0)
 
-            success_score = result['success']['success_level']
-            success_value = {
-                'high': 0.9,
-                'medium': 0.6,
-                'low': 0.3
-            }.get(success_score, 0.0)
-
-            # 5. Log activity
+            # 5. Log activity without identifying data
+            participant_code = uuid.uuid4().hex[:8]
             activity = {
-                "match_id": match.match_id,
-                "name": match.name,
-                "age": match.age,
-                "location": match.location,
+                "participant": participant_code,
+                "profile": match_profile.anonymize(),
                 "timestamp": datetime.now().isoformat(),
                 "opening": opening_msg,
                 "opening_confidence": metadata['confidence'],
                 "sent": True,
-                "got_response": result['success']['got_response'],
-                "conversation_turns": result['success']['number_of_turns'],
+                "got_response": success['got_response'],
+                "conversation_turns": success['number_of_turns'],
                 "success_score": success_value,
-                "analysis": result['analysis'],
-                "persona_used": result['persona'],
+                "analysis": analysis,
                 "opening_metadata": metadata
             }
 
             self.activity_log["matches"].append(activity)
 
-            # Update success counters
-            if result['success']['got_response']:
+            if success['got_response']:
                 self.activity_log["successful_conversations"] += 1
             else:
                 self.activity_log["failed_conversations"] += 1
 
             self.logger.info(
-                f"✓ Processed: {match.name} | "
+                f"✓ Processed participant {participant_code} | "
                 f"Success: {success_value:.0%} | "
-                f"Homophily: {result['analysis']['homophily_score']:.0%}"
+                f"Homophily: {analysis['homophily'].get('homophily_score', 0):.0%}"
             )
 
             return activity
@@ -284,6 +278,30 @@ class RealBotSystem:
                 "error": str(e),
                 "success_score": 0.0
             }
+
+    def _to_conversation(
+        self, match: TinderMatch, profile: Profile, tinder_messages: List[TinderMessage]
+    ) -> Conversation:
+        messages = [
+            Message(
+                timestamp=m.timestamp,
+                sender='bot' if m.sender == 'me' else 'user',
+                content=m.content,
+                word_count=len(m.content.split()),
+            )
+            for m in tinder_messages
+        ]
+        times = [datetime.fromisoformat(m.timestamp) for m in tinder_messages]
+        gaps = [(b - a).total_seconds() for a, b in zip(times, times[1:])]
+        return Conversation(
+            conversation_id=match.match_id,
+            profile=profile,
+            persona_used='adaptive',
+            messages=messages,
+            response_times=gaps,
+            started_at=tinder_messages[0].timestamp if tinder_messages else datetime.now().isoformat(),
+            ended_at=tinder_messages[-1].timestamp if tinder_messages else datetime.now().isoformat(),
+        )
 
     def run_once(self, limit: int = 5) -> Dict:
         """
@@ -314,7 +332,7 @@ class RealBotSystem:
                 self.activity_log["total_matches_processed"] += 1
 
                 # Rate limiting: random delay between matches
-                time.sleep(5)
+                time.sleep(0 if self.mock_mode else 5)
 
             self.save_activity()
             self.logger.info(
@@ -370,56 +388,24 @@ class RealBotSystem:
 
     def get_analysis_summary(self) -> Dict:
         """Get aggregated analysis of all processed conversations."""
-        if not self.activity_log["matches"]:
-            return {
-                "total_processed": 0,
-                "message": "No matches processed yet"
-            }
+        analyzed = [m for m in self.activity_log["matches"] if 'analysis' in m]
+        if not analyzed:
+            return {"total_processed": 0, "success_rate": 0.0,
+                    "avg_homophily_score": 0.0, "avg_opening_confidence": 0.0}
 
-        matches = self.activity_log["matches"]
-        successful = [m for m in matches if m.get('got_response', False)]
-
-        # Aggregate homophily scores
+        successful = [m for m in analyzed if m['got_response']]
         homophily_scores = [
-            m['analysis']['homophily_score']
-            for m in matches
-            if 'analysis' in m and 'homophily_score' in m['analysis']
+            m['analysis']['homophily']['homophily_score']
+            for m in analyzed
+            if 'homophily_score' in m['analysis'].get('homophily', {})
         ]
-
-        # Aggregate by gender
-        by_gender = {}
-        for match in matches:
-            if 'analysis' in match:
-                analysis = match['analysis']
-                if 'gender_dynamics' in analysis:
-                    for key, val in analysis['gender_dynamics'].items():
-                        if key not in by_gender:
-                            by_gender[key] = []
-                        by_gender[key].append(val)
-
         return {
-            "total_processed": self.activity_log["total_matches_processed"],
+            "total_processed": len(analyzed),
             "successful_responses": len(successful),
-            "success_rate": len(successful) / len(matches) if matches else 0,
-            "avg_homophily_score": sum(homophily_scores) / len(homophily_scores) if homophily_scores else 0,
-            "avg_opening_confidence": sum(
-                m['opening_confidence'] for m in matches if 'opening_confidence' in m
-            ) / len(matches) if matches else 0,
-            "gender_dynamics_summary": {k: len(v) for k, v in by_gender.items()},
-            "top_successful_topics": self._extract_top_topics(successful),
+            "success_rate": len(successful) / len(analyzed),
+            "avg_homophily_score": sum(homophily_scores) / len(homophily_scores) if homophily_scores else 0.0,
+            "avg_opening_confidence": sum(m['opening_confidence'] for m in analyzed) / len(analyzed),
         }
-
-    def _extract_top_topics(self, matches: List[Dict]) -> List[str]:
-        """Extract most common successful topics."""
-        topics = []
-        for match in matches:
-            if 'opening' in match:
-                # Simple heuristic: extract words after "curte" or similar
-                opening = match['opening'].lower()
-                if 'curte' in opening or 'gosta' in opening:
-                    # In a real scenario, would use NLP
-                    topics.append(opening)
-        return topics[:5]
 
     def close(self):
         """Close browser and save final state."""

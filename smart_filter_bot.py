@@ -13,6 +13,7 @@ import time
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime
 import logging
+from dataclasses import asdict
 
 from real_bot_system import RealBotSystem
 from tinder_automation import TinderMatch, TinderAutomation
@@ -66,22 +67,13 @@ class SmartFilterBot(RealBotSystem):
         self._init_successful_adapter()
 
     def _init_successful_adapter(self):
-        """Initialize adapter with ONLY successful conversations."""
-        if not self.integrated_system.conversation_history:
-            self.logger.warning("⚠️  No historical conversations provided")
-            successful = []
-        else:
-            successful = self._filter_successful_conversations(
-                self.integrated_system.conversation_history
-            )
-
+        """Train the opening generator only on conversations that worked."""
+        history = self.historical_conversations
+        successful = self._filter_successful_conversations(history)
         self.logger.info(
-            f"📚 Using {len(successful)}/{len(self.integrated_system.conversation_history)} "
-            f"successful conversations as templates"
+            f"📚 Using {len(successful)}/{len(history)} successful conversations as templates"
         )
-
-        # Create new adapter with only successful convos
-        self.successful_adapter = AdaptiveOpeningMessageGenerator(successful)
+        self.adaptive_generator = AdaptiveOpeningMessageGenerator(successful)
 
     def _filter_successful_conversations(
         self,
@@ -127,15 +119,7 @@ class SmartFilterBot(RealBotSystem):
         Returns:
             (online_matches, total_found)
         """
-        online = []
-        for match in matches:
-            # In real scenario, check match.is_online or similar
-            # For mock: assume all are "online" (can be improved)
-            if hasattr(match, 'is_online') and match.is_online:
-                online.append(match)
-            else:
-                # Mock: consider all as potentially online
-                online.append(match)
+        online = [m for m in matches if m.is_online]
 
         self.logger.info(
             f"🟢 Online matches: {len(online)}/{len(matches)}"
@@ -171,8 +155,8 @@ class SmartFilterBot(RealBotSystem):
             # STEP 2: Sort by confidence (highest first)
             online_with_confidence = []
             for match in online_matches[:limit]:
-                _, metadata = self.successful_adapter.generate_opening(
-                    self._tinder_match_to_profile(match)
+                _, metadata = self.adaptive_generator.generate_opening(
+                    asdict(self._tinder_match_to_profile(match))
                 )
                 online_with_confidence.append((match, metadata['confidence']))
 
@@ -219,27 +203,13 @@ class SmartFilterBot(RealBotSystem):
         )
 
     def get_smart_summary(self) -> Dict:
-        """Get analysis of smart filtering performance."""
-        summary = super().get_smart_summary() if hasattr(super(), 'get_smart_summary') else {}
-
+        """Summarize how the filters performed."""
+        summary = self.get_analysis_summary()
         summary.update({
             "success_threshold": self.success_threshold,
-            "historical_total": len(self.integrated_system.conversation_history),
-            "successful_only": len(self._filter_successful_conversations(
-                self.integrated_system.conversation_history
-            )),
-            "success_percentage": (
-                len(self._filter_successful_conversations(
-                    self.integrated_system.conversation_history
-                )) / max(len(self.integrated_system.conversation_history), 1) * 100
-            ),
-            "matches_attempted": self.activity_log["total_matches_processed"],
-            "success_rate": (
-                self.activity_log["successful_conversations"] /
-                max(self.activity_log["total_matches_processed"], 1)
-            ),
+            "historical_total": len(self.historical_conversations),
+            "successful_only": len(self._filter_successful_conversations(self.historical_conversations)),
         })
-
         return summary
 
     def auto_run_smart(self, interval_seconds: int = 600, max_iterations: Optional[int] = None):

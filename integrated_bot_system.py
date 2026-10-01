@@ -247,8 +247,8 @@ class IntegratedBotSystem:
 
     def _calculate_success(self, conversation: Conversation) -> Dict:
         """Calcula métrica de sucesso para a conversa"""
-        got_response = len(conversation.messages) > 1
         num_turns = len([m for m in conversation.messages if m.sender == 'user'])
+        got_response = num_turns > 0
 
         return {
             'got_response': got_response,

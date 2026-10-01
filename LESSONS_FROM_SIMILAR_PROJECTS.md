@@ -1,5 +1,7 @@
 # 📚 Lessons Learned from Similar GitHub Projects
 
+> **AVISO (correção de 2026-10-01):** nenhum projeto foi de fato analisado para escrever este arquivo. A "análise de 50+ projetos", as porcentagens e a classificação "top 5%" foram inventadas. Não cite este documento. As práticas de código descritas (backoff, limite de taxa, anonimização, versões fixas) são genéricas e continuam válidas como sugestões.
+
 > **Study of 50+ similar projects: Tinder bots, dating automation, conversation AI, anthropological analysis**
 
 ---

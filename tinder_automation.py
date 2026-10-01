@@ -6,6 +6,8 @@ IMPORTANTE: Isso viola Termos de Serviço do Tinder
 Use por sua conta e risco. Pode resultar em ban.
 """
 
+from __future__ import annotations
+
 import time
 import random
 import json
@@ -38,6 +40,7 @@ class TinderMatch:
     location: str
     distance_km: int
     timestamp: str
+    is_online: bool = False
 
 
 @dataclass
@@ -94,6 +97,7 @@ class TinderAutomation:
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)
+        logger.propagate = False
         return logger
 
     def _get_chrome_options(self) -> Options:
@@ -427,7 +431,8 @@ class TinderAutomation:
                 photos=[],
                 location="São Paulo",
                 distance_km=random.randint(1, 15),
-                timestamp=datetime.now().isoformat()
+                timestamp=datetime.now().isoformat(),
+                is_online=random.random() < 0.5
             )
             for i in range(count)
         ]
